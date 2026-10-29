@@ -30,26 +30,26 @@ El siguiente diagrama muestra el flujo desde el API Gateway hasta las bases de d
 
 ```mermaid
 flowchart LR
-    GW["<b>API GATEWAY</b><br/>────────────<br/>Rol: punto de entrada único<br/>────────────<br/>• Enrutamiento<br/>• Seguridad (JWT)"]
+    GW["API GATEWAY<br/>Punto de entrada único<br/>- Enrutamiento<br/>- Seguridad JWT"]
 
-    subgraph MS["ARQUITECTURA DE MICROSERVICIOS"]
-        direction TB
-        M1["<b>1. MS Aerolíneas</b><br/>────────────<br/><b>Aerolinea</b><br/>id<br/>nombre<br/>codigo_iata<br/>pais<br/>────────────<br/><b>Avion</b><br/>id<br/>matricula<br/>modelo<br/>capacidad<br/>aerolinea_id"]
-        M2["<b>2. MS Vuelos</b><br/>────────────<br/><b>Aeropuerto</b><br/>id<br/>nombre<br/>codigo_iata<br/>ciudad<br/>pais<br/>────────────<br/><b>Vuelo</b><br/>id<br/>numero_vuelo<br/>fecha_salida<br/>fecha_llegada<br/>estado<br/>minutos_demora<br/>avion_id<br/>origen_id<br/>destino_id"]
-        M3["<b>3. MS Reportes</b><br/>────────────<br/><b>Reporte</b><br/>id<br/>tipo<br/>fecha_desde<br/>fecha_hasta<br/>fecha_generacion<br/>total_vuelos<br/>vuelos_demorados<br/>vuelos_cancelados<br/>aerolinea_id"]
+    subgraph MS["Microservicios"]
+        M1["MS Aerolíneas<br/><br/>Aerolinea: id, nombre, codigo_iata, pais<br/><br/>Avion: id, matricula, modelo, capacidad, aerolinea_id"]
+        M2["MS Vuelos<br/><br/>Aeropuerto: id, nombre, codigo_iata, ciudad, pais<br/><br/>Vuelo: id, numero_vuelo, fecha_salida, fecha_llegada, estado, minutos_demora, avion_id, origen_id, destino_id"]
+        M3["MS Reportes<br/><br/>Reporte: id, tipo, fecha_desde, fecha_hasta, fecha_generacion, total_vuelos, vuelos_demorados, vuelos_cancelados, aerolinea_id"]
     end
 
-    subgraph BD["BASES DE DATOS (PostgreSQL)"]
-        direction TB
-        D1[("<b>aerolineas_db</b><br/>Aerolinea<br/>Avion")]
-        D2[("<b>vuelos_db</b><br/>Aeropuerto<br/>Vuelo")]
-        D3[("<b>reportes_db</b><br/>Reporte")]
+    subgraph BD["Bases de datos PostgreSQL"]
+        D1[("aerolineas_db<br/>Aerolinea, Avion")]
+        D2[("vuelos_db<br/>Aeropuerto, Vuelo")]
+        D3[("reportes_db<br/>Reporte")]
     end
 
-    GW -- "sync" --> M1 & M2 & M3
-    M2 -. "valida avion_id" .-> M1
-    M3 -. "consulta vuelos" .-> M2
-    M3 -. "consulta aerolíneas" .-> M1
+    GW -->|sync| M1
+    GW -->|sync| M2
+    GW -->|sync| M3
+    M2 -.->|valida avion_id| M1
+    M3 -.->|consulta vuelos| M2
+    M3 -.->|consulta aerolíneas| M1
     M1 --> D1
     M2 --> D2
     M3 --> D3
@@ -81,32 +81,6 @@ Entre microservicios no hay claves foráneas reales: se guarda solo el `id` (por
 - OpenFeign
 - PostgreSQL
 - Maven
-
----
-
-# Estructura del repositorio
-
-```
-reporte-vuelos/
-├── api-gateway/
-├── ms-aerolineas/
-├── ms-vuelos/
-├── ms-reportes/
-├── docs/
-│   ├── diagrama-clases.md
-│   └── diagrama-er.md
-└── README.md
-```
-
----
-
-# Cómo ejecutar
-
-> A completar a medida que avance el proyecto.
-
-1. Clonar el repositorio.
-2. Crear las tres bases de datos en PostgreSQL y configurar el `application.properties` de cada servicio.
-3. Levantar cada microservicio y, por último, el gateway.
 
 ---
 
