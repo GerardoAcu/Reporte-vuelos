@@ -1,0 +1,114 @@
+### Ejemplos para probar la API a traves del gateway (puerto 8080).
+### Se pueden ejecutar desde IntelliJ IDEA (HTTP Client) o con Postman / curl.
+### Orden sugerido: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 (asumen una base de datos vacia, con ids 1 y 2).
+
+### 1. Crear una aerolinea
+POST http://localhost:8080/aerolineas
+Content-Type: application/json
+
+{
+  "nombre": "Aerolíneas Argentinas",
+  "codigoIata": "AR",
+  "pais": "Argentina"
+}
+
+### 2. Crear un avion de esa aerolinea (aerolineaId = 1)
+POST http://localhost:8080/aviones
+Content-Type: application/json
+
+{
+  "matricula": "LV-FVB",
+  "modelo": "Boeing 737-800",
+  "capacidad": 189,
+  "aerolineaId": 1
+}
+
+### 3. Crear los aeropuertos
+POST http://localhost:8080/aeropuertos
+Content-Type: application/json
+
+{
+  "nombre": "Aeropuerto Teniente Benjamín Matienzo",
+  "codigoIata": "TUC",
+  "ciudad": "San Miguel de Tucumán",
+  "pais": "Argentina"
+}
+
+###
+POST http://localhost:8080/aeropuertos
+Content-Type: application/json
+
+{
+  "nombre": "Aeroparque Jorge Newbery",
+  "codigoIata": "AEP",
+  "ciudad": "Buenos Aires",
+  "pais": "Argentina"
+}
+
+### 4. Crear un vuelo (ms-vuelos valida que el avion 1 exista consultando a ms-aerolineas)
+POST http://localhost:8080/vuelos
+Content-Type: application/json
+
+{
+  "numeroVuelo": "AR1234",
+  "fechaSalida": "2026-11-10T08:00:00",
+  "fechaLlegada": "2026-11-10T10:30:00",
+  "avionId": 1,
+  "origenId": 1,
+  "destinoId": 2
+}
+
+### 5. Marcar el vuelo como demorado 45 minutos
+PUT http://localhost:8080/vuelos/1/estado
+Content-Type: application/json
+
+{
+  "estado": "DEMORADO",
+  "minutosDemora": 45
+}
+
+### 6. Generar un reporte de la aerolinea 1 para noviembre (ms-reportes consulta a los otros dos servicios)
+POST http://localhost:8080/reportes
+Content-Type: application/json
+
+{
+  "fechaDesde": "2026-11-01",
+  "fechaHasta": "2026-11-30",
+  "aerolineaId": 1
+}
+
+### 7. Reporte general (todas las aerolineas): se omite aerolineaId
+POST http://localhost:8080/reportes
+Content-Type: application/json
+
+{
+  "fechaDesde": "2026-11-01",
+  "fechaHasta": "2026-11-30"
+}
+
+### Consultas
+
+### Listar reportes guardados
+GET http://localhost:8080/reportes
+
+### Aeropuertos con mas trafico en un periodo
+GET http://localhost:8080/reportes/trafico-aeropuertos?desde=2026-11-01&hasta=2026-11-30&limite=5
+
+### Vuelos filtrados por estado y fechas
+GET http://localhost:8080/vuelos?estado=DEMORADO&desde=2026-11-01&hasta=2026-11-30
+
+### Aviones de una aerolinea
+GET http://localhost:8080/aviones?aerolineaId=1
+
+### Prueba de error: vuelo con un avion que no existe (debe responder 400)
+POST http://localhost:8080/vuelos
+Content-Type: application/json
+
+{
+  "numeroVuelo": "AR9999",
+  "fechaSalida": "2026-11-11T08:00:00",
+  "fechaLlegada": "2026-11-11T10:30:00",
+  "avionId": 999,
+  "origenId": 1,
+  "destinoId": 2
+}
